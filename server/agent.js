@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { scrapeTool, toolSpecs } from "./tools.js";
 import { memory } from "./memory.js";
 
+import { saveChatMessage } from "./db.js";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -14,12 +15,12 @@ function toToolRoleMessage(toolCallId, content) {
   };
 }
 
-async function executeToolCall(toolCall) {
+async function executeToolCall(toolCall, sessionId) {
   const { name, arguments: argsString } = toolCall.function;
   const args = JSON.parse(argsString || "{}");
 
   if (name === "scrape") {
-    return scrapeTool(args.url);
+    return scrapeTool(args.url, sessionId);
   }
 
   throw new Error(`Unknown tool: ${name}`);
@@ -29,6 +30,8 @@ export async function runAgent({ userMessage, sessionId = "default" }) {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("Missing OPENAI_API_KEY environment variable");
   }
+
+  await saveChatMessage({ sessionId, role: "user", content: userMessage });
 
   const priorMessages = memory.get(sessionId);
 
@@ -49,7 +52,7 @@ export async function runAgent({ userMessage, sessionId = "default" }) {
     const toolMessages = [];
 
     for (const toolCall of message.tool_calls) {
-      const toolResult = await executeToolCall(toolCall);
+      const toolResult = await executeToolCall(toolCall, sessionId);
       toolMessages.push(toToolRoleMessage(toolCall.id, toolResult));
     }
 
@@ -67,11 +70,13 @@ export async function runAgent({ userMessage, sessionId = "default" }) {
     const finalText = finalResponse.choices[0].message.content || "";
     newMemoryMessages.push({ role: "assistant", content: finalText });
     memory.append(sessionId, newMemoryMessages);
+    await saveChatMessage({ sessionId, role: "assistant", content: finalText });
     return finalText;
   }
 
   const directText = message.content || "";
   newMemoryMessages.push({ role: "assistant", content: directText });
   memory.append(sessionId, newMemoryMessages);
+  await saveChatMessage({ sessionId, role: "assistant", content: directText });
   return directText;
 }
