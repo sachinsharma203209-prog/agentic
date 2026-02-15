@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.js",
+
     "check": "node --check server/index.js && node --check server/agent.js && node --check server/tools.js && node --check server/memory.js && node --check server/db.js"
+=======
+   
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -13,5 +16,7 @@
     "mongodb": "^6.8.0",
     "openai": "^4.56.0",
     "playwright": "^1.46.0"
+ 
+
   }
 }

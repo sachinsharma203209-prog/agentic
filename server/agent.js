@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 import { scrapeTool, toolSpecs } from "./tools.js";
 import { memory } from "./memory.js";
-import { saveChatMessage } from "./db.js";
 
+import { saveChatMessage } from "./db.js";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
