@@ -18,11 +18,26 @@ export const toolSpecs = [
   }
 ];
 
+function validateUrl(url) {
+  let parsed;
+
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("Tool 'scrape' requires a valid URL");
+  }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Tool 'scrape' only supports http/https URLs");
+  }
+}
+
 export async function scrapeTool(url, sessionId = "default") {
   if (!url || typeof url !== "string") {
     throw new Error("Tool 'scrape' requires a URL string");
   }
 
+  validateUrl(url);
   console.log("🔧 Tool called:", url);
 
   const browser = await chromium.launch({ headless: true });
@@ -47,6 +62,8 @@ export async function scrapeTool(url, sessionId = "default") {
     });
 
     return `Scraped ${url}\nTitle: ${title}\nContent: ${textContent}`;
+  } catch (error) {
+    return `Unable to scrape ${url}: ${error.message}`;
   } finally {
     await browser.close();
   }

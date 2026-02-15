@@ -1,6 +1,6 @@
 # centeragent
 
-Minimal Lovable-style AI architecture with clear separation:
+Minimal Lovable-style AI architecture with clean separation:
 
 - `app/` — Simple frontend chat client.
 - `server/index.js` — Express API (`POST /chat`).
@@ -16,6 +16,7 @@ Minimal Lovable-style AI architecture with clear separation:
 - MongoDB persistence for:
   - `chat_messages`
   - `scrape_results`
+- Graceful fallback when MongoDB is unavailable
 
 ## Run
 

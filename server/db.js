@@ -2,8 +2,13 @@ import { MongoClient } from "mongodb";
 
 let client;
 let database;
+let dbDisabled = false;
 
 export async function getDb() {
+  if (dbDisabled) {
+    return null;
+  }
+
   if (database) {
     return database;
   }
@@ -15,10 +20,16 @@ export async function getDb() {
     return null;
   }
 
-  client = new MongoClient(uri);
-  await client.connect();
-  database = client.db(dbName);
-  return database;
+  try {
+    client = new MongoClient(uri);
+    await client.connect();
+    database = client.db(dbName);
+    return database;
+  } catch (error) {
+    dbDisabled = true;
+    console.warn("MongoDB unavailable, continuing without persistence:", error.message);
+    return null;
+  }
 }
 
 export async function saveChatMessage({ sessionId, role, content }) {
